@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Direction, Position, Worm } from "../shared/types";
-import { DIMENSION, MAX_FOODS } from "../shared/constants";
+import { ARROW_KEYS, DIMENSION, MAX_FOODS } from "../shared/constants";
 import {
   convertDirectionToInt,
+  createFoodPosition,
   getBoxBackgroundColor,
   getNewPosition,
   getRandomFoodPositions,
@@ -11,10 +12,10 @@ import {
 import styles from "../styles/Home.module.css";
 import lodash from "lodash";
 
-const ONE_SECOND = 1 * 100;
+const FPS = 1 * 100;
 const Game = () => {
   const lastTimeStampRef = useRef<number>(0);
-
+  const blockChangeDirectionRef = useRef<boolean>(false);
   const mainDirectionRef = useRef<Direction>("DOWN");
   const [mainDirection, setMainDireciton] = useState<Direction>("DOWN");
   const [mainWorm, setMainWorm] = useState<Worm>([
@@ -24,9 +25,17 @@ const Game = () => {
     getRandomFoodPositions(MAX_FOODS)
   );
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
     const listener = (e: globalThis.KeyboardEvent) => {
-      if (!e || !e.key) {
+      if (!e || !e.key || blockChangeDirectionRef.current) {
         return;
+      }
+      if (ARROW_KEYS.includes(e.key)) {
+        blockChangeDirectionRef.current = true;
+        timerId = setTimeout(() => {
+          blockChangeDirectionRef.current = false;
+        }, FPS);
       }
       switch (e.key) {
         case "ArrowUp":
@@ -58,6 +67,9 @@ const Game = () => {
     document.addEventListener("keydown", listener);
     return () => {
       document.removeEventListener("keydown", listener);
+      if (timerId) {
+        clearTimeout(timerId);
+      }
     };
   }, []);
   useEffect(() => {
@@ -65,7 +77,7 @@ const Game = () => {
       if (!timeStamp) {
         return;
       }
-      if (timeStamp - lastTimeStampRef.current >= ONE_SECOND) {
+      if (timeStamp - lastTimeStampRef.current >= FPS) {
         lastTimeStampRef.current = timeStamp;
         setMainWorm((prev) => {
           if (prev.length === 0) {
@@ -94,10 +106,15 @@ const Game = () => {
           }
 
           if (foodIdx > -1) {
+            // remove food
             foodPositionsRef.current.splice(foodIdx, 1);
+
+            // add new food
+            const newFood = createFoodPosition(foodPositionsRef.current);
+            foodPositionsRef.current.push(newFood);
             newWorm.push(last);
           }
-
+          blockChangeDirectionRef.current = false;
           return newWorm;
         });
       }

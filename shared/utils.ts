@@ -51,13 +51,17 @@ export const getRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min) + min);
 };
 
+export const getRandomPosition = (): Position => {
+  return {
+    row: getRandomInt(0, DIMENSION),
+    column: getRandomInt(0, DIMENSION),
+  };
+};
+
 export const getRandomFoodPositions = (numberOfFood: number) => {
   const foodPositions: Position[] = [];
   for (let i = 0; i < numberOfFood; i++) {
-    const position: Position = {
-      row: getRandomInt(0, DIMENSION),
-      column: getRandomInt(0, DIMENSION),
-    };
+    const position = getRandomPosition();
     if (!foodPositions.includes(position)) {
       foodPositions.push(position);
     }
@@ -65,6 +69,18 @@ export const getRandomFoodPositions = (numberOfFood: number) => {
 
   return foodPositions;
 };
+
+export const createFoodPosition = (currentPositionList: Position[]) => {
+  let position = getRandomPosition();
+
+  while (currentPositionList.includes(position)) {
+    position = getRandomPosition();
+  }
+
+  return position;
+};
+
+export const addFood = () => {};
 
 export const getBoxBackgroundColor = ({
   boxPosition,
