@@ -153,7 +153,7 @@ const Game = () => {
         gridTemplateRows: `repeat(${DIMENSION}, minmax(0, 1fr))`,
         gridTemplateColumns: `repeat(${DIMENSION}, minmax(0, 1fr))`,
       }}
-      className="grid  grid-flow-dense"
+      className="grid scrollbar-hide"
     >
       {Array.from(Array(DIMENSION).keys()).map((row) => {
         return Array.from(Array(DIMENSION).keys()).map((column) => {
