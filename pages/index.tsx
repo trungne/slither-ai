@@ -8,6 +8,11 @@ const Game = dynamic(() => import("../components/Game"), {
 const Home: NextPage = () => {
   return (
     <>
+     <Head>
+        <title>Slither AI</title>
+        <meta name="description" content="Like snake but with AI" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <Game />
     </>
   );
