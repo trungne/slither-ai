@@ -9,12 +9,14 @@ import {
   isSamePosition,
 } from "../shared/utils";
 import styles from "../styles/Home.module.css";
+import lodash from "lodash";
 
 const ONE_SECOND = 1 * 100;
 const Game = () => {
   const lastTimeStampRef = useRef<number>(0);
 
   const mainDirectionRef = useRef<Direction>("DOWN");
+  const [mainDirection, setMainDireciton] = useState<Direction>("DOWN");
   const [mainWorm, setMainWorm] = useState<Worm>([
     { column: 5, row: 5, direction: mainDirectionRef.current },
   ]);
@@ -30,21 +32,25 @@ const Game = () => {
         case "ArrowUp":
           if (mainDirectionRef.current !== "DOWN") {
             mainDirectionRef.current = "UP";
+            setMainDireciton("UP");
           }
           break;
         case "ArrowDown":
           if (mainDirectionRef.current !== "UP") {
             mainDirectionRef.current = "DOWN";
+            setMainDireciton("DOWN");
           }
           break;
         case "ArrowLeft":
           if (mainDirectionRef.current !== "RIGHT") {
             mainDirectionRef.current = "LEFT";
+            setMainDireciton("LEFT");
           }
           break;
         case "ArrowRight":
           if (mainDirectionRef.current !== "LEFT") {
             mainDirectionRef.current = "RIGHT";
+            setMainDireciton("RIGHT");
           }
           break;
       }
@@ -65,45 +71,45 @@ const Game = () => {
           if (prev.length === 0) {
             return prev;
           }
-          const newWorm = [...prev];
+          // do not remove clone deep here, trust me!
+          const newWorm = lodash.cloneDeep(prev);
 
-          for (let i = 1; i < newWorm.length; i++) {
-            newWorm[i].column = newWorm[i - 1].column;
-            newWorm[i].row = newWorm[i - 1].row;
-            newWorm[i].direction = newWorm[i - 1].direction;
-          }
-          const newHead = getNewPosition(newWorm[0], mainDirectionRef.current);
-
-          newWorm[0] = {
-            ...newHead,
-            direction: mainDirectionRef.current,
-          };
+          const last = newWorm[newWorm.length - 1];
 
           const foodIdx = foodPositionsRef.current.findIndex((e) =>
             isSamePosition(e, newWorm[0])
           );
 
+          const newHead = getNewPosition(newWorm[0], mainDirectionRef.current);
+          let nextPosition: typeof newWorm[0] = newWorm[0];
+          newWorm[0] = {
+            ...newHead,
+            direction: mainDirectionRef.current,
+          };
+
+          for (let i = 1; i < newWorm.length; i++) {
+            const temp = newWorm[i];
+            newWorm[i] = nextPosition;
+            nextPosition = temp;
+          }
+
           if (foodIdx > -1) {
             foodPositionsRef.current.splice(foodIdx, 1);
-            const last = newWorm[newWorm.length - 1];
-            const newNode = { ...last };
-            if (newNode.direction === "DOWN" || newNode.direction === "UP") {
-              const delta = convertDirectionToInt(newNode.direction);
-              newNode.row += delta;
-            } else {
-              const delta = convertDirectionToInt(newNode.direction);
-              newNode.column += delta;
-            }
-            newWorm.push(newNode);
+            newWorm.push(last);
           }
+
           return newWorm;
         });
       }
       requestAnimationFrame(updateTimer);
     };
 
-    requestAnimationFrame(updateTimer);
-  }, []);
+    const id = requestAnimationFrame(updateTimer);
+
+    return () => {
+      cancelAnimationFrame(id);
+    };
+  }, [mainDirection]);
   return (
     <div className={styles.container}>
       <main

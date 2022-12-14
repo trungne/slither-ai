@@ -18,11 +18,14 @@ export const getNewPosition = (
 
   if (curDirection === "DOWN") {
     newRow++;
-  } else if (curDirection === "UP") {
+  }
+  if (curDirection === "UP") {
     newRow--;
-  } else if (curDirection === "RIGHT") {
+  }
+  if (curDirection === "RIGHT") {
     newColumn++;
-  } else if (curDirection === "LEFT") {
+  }
+  if (curDirection === "LEFT") {
     newColumn--;
   }
 
@@ -97,12 +100,12 @@ export const getBoxBackgroundColor = ({
 export const convertDirectionToInt = (direction: Direction) => {
   switch (direction) {
     case "DOWN":
-      return 1;
+      return -1;
     case "RIGHT":
-      return 1;
+      return -1;
     case "LEFT":
-      return -1;
+      return +1;
     case "UP":
-      return -1;
+      return +1;
   }
 };
