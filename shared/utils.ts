@@ -110,18 +110,3 @@ export const getBoxBackgroundColor = ({
   return "gray";
 };
 
-// the delta that direction can make to a position
-// if the direction is down, the delta will be 1.
-// {column: 1, row: 1} + DOWN = {column: 1, row: 2}
-export const convertDirectionToInt = (direction: Direction) => {
-  switch (direction) {
-    case "DOWN":
-      return -1;
-    case "RIGHT":
-      return -1;
-    case "LEFT":
-      return +1;
-    case "UP":
-      return +1;
-  }
-};

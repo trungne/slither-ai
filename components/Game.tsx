@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Direction, Position, Worm } from "../shared/types";
 import { ARROW_KEYS, DIMENSION, MAX_FOODS } from "../shared/constants";
 import {
-  convertDirectionToInt,
   createFoodPosition,
   getBoxBackgroundColor,
   getNewPosition,
@@ -12,7 +11,7 @@ import {
 import styles from "../styles/Home.module.css";
 import lodash from "lodash";
 
-const FPS = 1 * 100;
+const FPS = 1 * 60;
 const Game = () => {
   const lastTimeStampRef = useRef<number>(0);
   const blockChangeDirectionRef = useRef<boolean>(false);
@@ -41,27 +40,35 @@ const Game = () => {
       }
       switch (e.key) {
         case "ArrowUp":
+          if (mainDirectionRef.current === "UP") {
+            return;
+          }
           if (mainDirectionRef.current !== "DOWN") {
             mainDirectionRef.current = "UP";
-            setMainDireciton("UP");
           }
           break;
         case "ArrowDown":
+          if (mainDirectionRef.current === "DOWN") {
+            return;
+          }
           if (mainDirectionRef.current !== "UP") {
             mainDirectionRef.current = "DOWN";
-            setMainDireciton("DOWN");
           }
           break;
         case "ArrowLeft":
+          if (mainDirectionRef.current === "LEFT") {
+            return;
+          }
           if (mainDirectionRef.current !== "RIGHT") {
             mainDirectionRef.current = "LEFT";
-            setMainDireciton("LEFT");
           }
           break;
         case "ArrowRight":
+          if (mainDirectionRef.current === "RIGHT") {
+            return;
+          }
           if (mainDirectionRef.current !== "LEFT") {
             mainDirectionRef.current = "RIGHT";
-            setMainDireciton("RIGHT");
           }
           break;
       }
@@ -90,10 +97,6 @@ const Game = () => {
 
           const last = newWorm[newWorm.length - 1];
 
-          const foodIdx = foodPositionsRef.current.findIndex((e) =>
-            isSamePosition(e, newWorm[0])
-          );
-
           const newHead = getNewPosition(newWorm[0], mainDirectionRef.current);
           let nextPosition: typeof newWorm[0] = newWorm[0];
           newWorm[0] = {
@@ -101,11 +104,18 @@ const Game = () => {
             direction: mainDirectionRef.current,
           };
 
+          // assume the next position.
+          // node 1 will assume position of node 0 (head)
+          // node 2 will assume position of node 1, so on and so on
           for (let i = 1; i < newWorm.length; i++) {
             const temp = newWorm[i];
             newWorm[i] = nextPosition;
             nextPosition = temp;
           }
+
+          const foodIdx = foodPositionsRef.current.findIndex((e) =>
+            isSamePosition(e, newWorm[0])
+          );
 
           if (foodIdx > -1) {
             newWorm.push(last);
@@ -138,36 +148,32 @@ const Game = () => {
     };
   }, [mainDirection]);
   return (
-    <div>
-      <main
-        style={{
-          gridTemplateRows: `repeat(${DIMENSION}, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${DIMENSION}, minmax(0, 1fr))`,
-        }}
-        className="grid  grid-flow-dense"
-      >
-        {Array.from(Array(DIMENSION).keys()).map((row) => {
-          return Array.from(Array(DIMENSION).keys()).map((column) => {
-            const backgroundColor = getBoxBackgroundColor({
-              boxPosition: { column: column, row: row },
-              worm: mainWorm,
-              foodPositions: foodPositionsRef.current,
-            });
-
-            return (
-              <div
-                id={`column-${column}-row-${row}`}
-                key={`column-${column}-row-${row}`}
-                className="aspect-square outline outline-1 outline-gray-500 "
-                style={{ backgroundColor }}
-              ></div>
-            );
+    <main
+      style={{
+        gridTemplateRows: `repeat(${DIMENSION}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${DIMENSION}, minmax(0, 1fr))`,
+      }}
+      className="grid  grid-flow-dense"
+    >
+      {Array.from(Array(DIMENSION).keys()).map((row) => {
+        return Array.from(Array(DIMENSION).keys()).map((column) => {
+          const backgroundColor = getBoxBackgroundColor({
+            boxPosition: { column: column, row: row },
+            worm: mainWorm,
+            foodPositions: foodPositionsRef.current,
           });
-        })}
-      </main>
 
-      <footer className={styles.footer}></footer>
-    </div>
+          return (
+            <div
+              id={`column-${column}-row-${row}`}
+              key={`column-${column}-row-${row}`}
+              className="aspect-square outline outline-1 outline-gray-500 "
+              style={{ backgroundColor }}
+            ></div>
+          );
+        });
+      })}
+    </main>
   );
 };
 
