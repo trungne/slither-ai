@@ -36,6 +36,8 @@ const Game = () => {
         timerId = setTimeout(() => {
           blockChangeDirectionRef.current = false;
         }, FPS);
+
+        e.preventDefault();
       }
       switch (e.key) {
         case "ArrowUp":
@@ -106,15 +108,23 @@ const Game = () => {
           }
 
           if (foodIdx > -1) {
+            newWorm.push(last);
             // remove food
             foodPositionsRef.current.splice(foodIdx, 1);
 
             // add new food
-            const newFood = createFoodPosition(foodPositionsRef.current);
+            const newFood = createFoodPosition([
+              ...foodPositionsRef.current,
+              ...newWorm,
+            ]);
             foodPositionsRef.current.push(newFood);
-            newWorm.push(last);
           }
           blockChangeDirectionRef.current = false;
+          const headDiv = document.querySelector(
+            `#column-${newWorm[0].column}-row-${newWorm[0].row}`
+          );
+          headDiv?.scrollIntoView({ block: "center", inline: "center" });
+
           return newWorm;
         });
       }
@@ -128,17 +138,16 @@ const Game = () => {
     };
   }, [mainDirection]);
   return (
-    <div className={styles.container}>
+    <div>
       <main
         style={{
           gridTemplateRows: `repeat(${DIMENSION}, minmax(0, 1fr))`,
           gridTemplateColumns: `repeat(${DIMENSION}, minmax(0, 1fr))`,
-          gridAutoFlow: "column",
         }}
-        className="grid"
+        className="grid  grid-flow-dense"
       >
-        {Array.from(Array(DIMENSION).keys()).map((column) => {
-          return Array.from(Array(DIMENSION).keys()).map((row) => {
+        {Array.from(Array(DIMENSION).keys()).map((row) => {
+          return Array.from(Array(DIMENSION).keys()).map((column) => {
             const backgroundColor = getBoxBackgroundColor({
               boxPosition: { column: column, row: row },
               worm: mainWorm,
@@ -149,7 +158,7 @@ const Game = () => {
               <div
                 id={`column-${column}-row-${row}`}
                 key={`column-${column}-row-${row}`}
-                className=" aspect-square border border-solid border-gray-500"
+                className="aspect-square outline outline-1 outline-gray-500 "
                 style={{ backgroundColor }}
               ></div>
             );
